@@ -1,21 +1,21 @@
 #include "website.h"
-map<int, website> websites; 
+map<int, website> websites;
 string screen = "";
 // Building a search enginge.
 template <typename T>
 void print_AL(vector<vector<T>> v); // print Adjacency list for web webGraph for debugging purposes.
 void classify_search(const string& searchQuery);
-void build_web_graph(multimap<int, int>& TransposedwebGraph, vector<vector<int>> &TransposedVector);
+void build_web_graph(multimap<int, int>& TransposedwebGraph, vector<vector<int>>& TransposedVector);
 void save_key_words();
 void save_impressions_number();
 void save_clicks();
 void menu_spark();
 void search_spark();
-void LOWER(string &s); // to make a string all lower characters.
-void OR_search(const vector<string> &searchKeys);
+void LOWER(string& s); // to make a string all lower characters.
+void OR_search(const vector<string>& searchKeys);
 void AND_search(const vector<string>& searchKeys);
 void Quote_search(const vector<string>& searchKeys);
-void print_results(map<double, website> &resultWebsites, bool isFirst);
+void print_results(map<double, website>& resultWebsites, bool isFirst);
 void PR_spark(vector<vector<int>>& TransposedVector); // initialize PR calculations;
 void Open_web(int webNum, map<double, website>& resultWebsites);
 void save_screen(string s);
@@ -27,14 +27,14 @@ int main()
     // Program initialization.
     multimap<int, int> TransposedwebGraph; // map contains edges between numeric values of the websites.
     vector<vector<int>> TransposedVector;
-    build_web_graph(TransposedwebGraph,TransposedVector);
+    build_web_graph(TransposedwebGraph, TransposedVector);
     save_key_words();
     save_impressions_number();
     save_clicks();
     PR_spark(TransposedVector);
     menu_spark();
 }
-void build_web_graph(multimap<int, int>& TransposedwebGraph, vector<vector<int>> &TransposedVector)
+void build_web_graph(multimap<int, int>& TransposedwebGraph, vector<vector<int>>& TransposedVector)
 {
     ifstream webGraphFile("webGraph.csv");
     if (!webGraphFile.is_open())
@@ -48,8 +48,8 @@ void build_web_graph(multimap<int, int>& TransposedwebGraph, vector<vector<int>>
         int comma_idx = s.find(',');
         int w = s.find('w');
         int m = s.find('m');
-        string part1 = s.substr(w, m - w+1);
-        string part2 = s.substr(comma_idx+1, s.find_last_of('m') - comma_idx);
+        string part1 = s.substr(w, m - w + 1);
+        string part2 = s.substr(comma_idx + 1, s.find_last_of('m') - comma_idx);
 
         int web1Num, web2Num;
         int s_webNum_idx = part1.find_first_of("0123456789");
@@ -59,21 +59,22 @@ void build_web_graph(multimap<int, int>& TransposedwebGraph, vector<vector<int>>
             web1Num = (part1[s_webNum_idx] - '0') * 10 + part1[e_webNum_idx] - '0';
         else
             web1Num = (part1[s_webNum_idx] - '0');
- 
-       s_webNum_idx = part2.find_first_of("0123456789");
-       e_webNum_idx = part2.find_last_of("0123456789");
-       if (s_webNum_idx != e_webNum_idx) 
-           web2Num = (part2[s_webNum_idx] - '0') * 10 + part2[e_webNum_idx] - '0';
-       else
-           web2Num = (part2[s_webNum_idx] - '0');
 
-       websites.emplace(web1Num, website(web1Num,part1)); // webNum is the web index
-       websites.emplace(web2Num, website(web2Num, part2));
-       websites[web1Num].updateOutLinks();
-       TransposedwebGraph.emplace(web2Num, web1Num); // transposed as needed for PageRank calculations.
+        s_webNum_idx = part2.find_first_of("0123456789");
+        e_webNum_idx = part2.find_last_of("0123456789");
+        if (s_webNum_idx != e_webNum_idx)
+            web2Num = (part2[s_webNum_idx] - '0') * 10 + part2[e_webNum_idx] - '0';
+        else
+            web2Num = (part2[s_webNum_idx] - '0');
+
+        websites.emplace(web1Num, website(web1Num, part1)); // webNum is the web index
+        websites.emplace(web2Num, website(web2Num, part2));
+        websites[web1Num].updateOutLinks();
+        TransposedwebGraph.emplace(web2Num, web1Num); // transposed as needed for PageRank calculations.
     }
-    TransposedVector.resize(websites.size()+1);
-    for (auto i : TransposedwebGraph) {
+    TransposedVector.resize(websites.size() + 1);
+    for (auto i : TransposedwebGraph)
+    {
         TransposedVector[i.first].push_back(i.second);
     }
     webGraphFile.close();
@@ -133,15 +134,16 @@ void save_impressions_number()
     impFile.close();
 }
 
-void save_clicks(){
+void save_clicks()
+{
     ifstream clicksFile("clicks.csv");
     if (!clicksFile.is_open())
         return;
-    else 
+    else
     {
         string s;
         int lineNum = 1;
-        while(getline(clicksFile, s))
+        while (getline(clicksFile, s))
         {
             stringstream ss(s);
             string Clicks;
@@ -149,13 +151,12 @@ void save_clicks(){
             {
             }
             int c = stoi(Clicks);
-            websites[lineNum].setClicks(c);  // assuming the impressions file is given in a sorted manner.
+            websites[lineNum].setClicks(c); // assuming the impressions file is given in a sorted manner.
             lineNum++;
         }
         clicksFile.close();
     }
 }
-
 
 void menu_spark()
 {
@@ -189,7 +190,7 @@ void print_AL(vector<vector<T>> v)
         cout << "\n";
     }
 }
-void classify_search(const string& searchQuery) //takes the query and classify the search type and take the important key words form the query and put it in a vector.
+void classify_search(const string& searchQuery) // takes the query and classify the search type and take the important key words form the query and put it in a vector.
 {
     vector<vector<string>> searchKeys(3);
     int n = searchQuery.size();
@@ -233,19 +234,19 @@ void classify_search(const string& searchQuery) //takes the query and classify t
         Quote_search(searchKeys[1]);
     else if (!searchKeys[2].empty())
         OR_search(searchKeys[2]);
-
 }
-void LOWER(string& s) {
-    for (auto& i : s) 
+void LOWER(string& s)
+{
+    for (auto& i : s)
     {
         i = tolower(i);
     }
 }
 
-void OR_search(const vector<string>& searchKeys) 
+void OR_search(const vector<string>& searchKeys)
 {
-    map<double,website> resultWebsites; // a map <double score, website result>
-    for (auto &it : websites) 
+    map<double, website> resultWebsites; // a map <double score, website result>
+    for (auto& it : websites)
     {
         string temp = it.second.getKeyWords();
         LOWER(temp);
@@ -254,25 +255,25 @@ void OR_search(const vector<string>& searchKeys)
             for (auto word : searchKeys)
             {
                 LOWER(word); // to ignore case sensitivity.
-                if (temp.find(word) != std::string::npos) 
+                if (temp.find(word) != std::string::npos)
                 {
-                    it.second.updateImpressions(); 
+                    it.second.updateImpressions();
                     resultWebsites.emplace(it.second.getScore(), it.second);
                     break;
                 }
-
             }
         }
-    } 
-    print_results(resultWebsites,true);
+    }
+    print_results(resultWebsites, true);
 }
-void AND_search(const vector<string>& searchKeys) {
+void AND_search(const vector<string>& searchKeys)
+{
     map<double, website> resultWebsites; // a map <double score, website result>
     for (auto& it : websites)
     {
         bool exist = true;
         string temp = it.second.getKeyWords();
-        LOWER(temp); 
+        LOWER(temp);
         if (temp != "")
         {
             for (auto word : searchKeys)
@@ -283,14 +284,15 @@ void AND_search(const vector<string>& searchKeys) {
                     exist = false;
                     break;
                 }
-
             }
-            if(exist) resultWebsites.emplace(it.second.getScore(), it.second);
+            if (exist)
+                resultWebsites.emplace(it.second.getScore(), it.second);
         }
     }
     print_results(resultWebsites, true);
 }
-void Quote_search(const vector<string>& searchKeys) {
+void Quote_search(const vector<string>& searchKeys)
+{
     map<double, website> resultWebsites; // a map <double score, website result>
     for (auto& it : websites)
     {
@@ -305,19 +307,19 @@ void Quote_search(const vector<string>& searchKeys) {
                     exist = false;
                     break;
                 }
-
             }
-            if (exist) resultWebsites.emplace(it.second.getScore(), it.second);
+            if (exist)
+                resultWebsites.emplace(it.second.getScore(), it.second);
         }
     }
     print_results(resultWebsites, true);
 }
 
-
-void PR_spark(vector<vector<int>>& TransposedVector) {
+void PR_spark(vector<vector<int>>& TransposedVector)
+{
     websites.begin()->second.calculatePR(websites, TransposedVector);
 }
-void search_spark() 
+void search_spark()
 {
     cout << "\nInstructions for valid search query:\n1. Don't use AND or OR inside a quotation marks.\n2. use AND and OR (capitalized).\n";
     cout << "What do you want to search for?\n";
@@ -326,21 +328,24 @@ void search_spark()
     getline(cin, searchQuery);
     classify_search(searchQuery);
 }
-void save_screen(string s) {
+void save_screen(string s)
+{
     screen += s;
 }
-void print_saved_screen() {
+void print_saved_screen()
+{
     cout << screen;
     screen = "";
 }
-void print_results(map<double, website> &resultWebsites, bool isFirst) // isFirst is used to avoid redoing operations again.
+void print_results(map<double, website>& resultWebsites, bool isFirst) // isFirst is used to avoid redoing operations again.
 {
     cout << "\nSearch Results:\n";
     if (isFirst)
     {
         int i = 1;
         string s = "";
-        for (auto it = resultWebsites.rbegin(); it != resultWebsites.rend(); ++it) {
+        for (auto it = resultWebsites.rbegin(); it != resultWebsites.rend(); ++it)
+        {
             cout << i << ". " << it->second.getName() << endl;
             s = s + to_string(i) + ". " + it->second.getName() + "\n";
             i++;
@@ -349,59 +354,63 @@ void print_results(map<double, website> &resultWebsites, bool isFirst) // isFirs
     }
     else
         print_saved_screen();
-    if (resultWebsites.empty()) cout << "Currently, there is no website relavent to your query.\n";
+    if (resultWebsites.empty())
+        cout << "Currently, there is no website relavent to your query.\n";
     cout << "Would you like to?\n1. Choose a web page to open.\n2. New search.\n3. Exit.\nType in your choice: ";
     int x;
     cin >> x;
-    while (x > 3 || x < 1 || (x==1 && resultWebsites.empty())) {
-        cout << "Invalid input. Please try again.\nType in your choice: ";
-        cin >> x;
-    }
-    switch (x)
+    while (x > 3 || x < 1 || (x == 1 && resultWebsites.empty()))
     {
-        case 1: 
-        {
-            int c;
-            cout << "Please enter web page number: ";
-            cin >> c;
-            while (c > resultWebsites.size()) {
-                cout << "invalid input! Please try again.\nPlease enter web page number: ";
-                cin >> c;
-            }
-            auto webIt = resultWebsites.begin();
-            for (int i = 0; i < c - 1; i++) webIt++;
-            websites[webIt->second.getWebNum()].updateClicks();
-            Open_web(webIt->second.getWebNum(), resultWebsites);
-            break;
-        }
-        case 2:
-        {
-            search_spark();
-            break;
-        }
-        case 3:
-        {
-            update_files();
-            exit(1);
-            break;
-        }
-    } 
-      
-    
-}
-void Open_web(int webNum, map<double, website>& resultWebsites) // webNum is the web index
-{
-    cout << "\nYou are now viewing " << websites[webNum].getName() << " Would you like to?\n";
-    cout << "1. Back to search results.\n2. New search.\n3. Exit.\nType in your choice: ";
-    int x; cin >> x;
-    while (x > 3 || x < 1) {
         cout << "Invalid input. Please try again.\nType in your choice: ";
         cin >> x;
     }
     switch (x)
     {
     case 1:
-        print_results(resultWebsites, false);   // Back to search results.
+    {
+        int c;
+        cout << "Please enter web page number: ";
+        cin >> c;
+        while (c > resultWebsites.size())
+        {
+            cout << "invalid input! Please try again.\nPlease enter web page number: ";
+            cin >> c;
+        }
+        auto webIt = resultWebsites.begin();
+        for (int i = 0; i < c - 1; i++)
+            webIt++;
+        websites[webIt->second.getWebNum()].updateClicks();
+        Open_web(webIt->second.getWebNum(), resultWebsites);
+        break;
+    }
+    case 2:
+    {
+        search_spark();
+        break;
+    }
+    case 3:
+    {
+        update_files();
+        exit(1);
+        break;
+    }
+    }
+}
+void Open_web(int webNum, map<double, website>& resultWebsites) // webNum is the web index
+{
+    cout << "\nYou are now viewing " << websites[webNum].getName() << " Would you like to?\n";
+    cout << "1. Back to search results.\n2. New search.\n3. Exit.\nType in your choice: ";
+    int x;
+    cin >> x;
+    while (x > 3 || x < 1)
+    {
+        cout << "Invalid input. Please try again.\nType in your choice: ";
+        cin >> x;
+    }
+    switch (x)
+    {
+    case 1:
+        print_results(resultWebsites, false); // Back to search results.
         break;
     case 2:
         search_spark();
@@ -411,14 +420,14 @@ void Open_web(int webNum, map<double, website>& resultWebsites) // webNum is the
         exit(1);
         break;
     }
-        
 }
-void update_files() 
+void update_files()
 {
     // Update Clicks:
     ofstream file;
     file.open("newclicks.csv");
-    for (auto w : websites) {
+    for (auto w : websites)
+    {
         file << w.second.getName() << "," << w.second.getClicks() << "\n";
     }
     file.close();
@@ -427,13 +436,11 @@ void update_files()
 
     // Update impressions:
     file.open("newimpressions.csv");
-    for (auto w : websites) {
+    for (auto w : websites)
+    {
         file << w.second.getName() << "," << w.second.getImpressions() << "\n";
     }
     file.close();
     remove("impressions.csv");
     rename("newimpressions.csv", "impressions.csv");
 }
-
-
-

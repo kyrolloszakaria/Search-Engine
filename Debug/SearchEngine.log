@@ -1,3 +1,9 @@
 ﻿  SearchEngine.cpp
-C:\Users\kero6\source\repos\SearchEngine\SearchEngine\SearchEngine.cpp(367,22): warning C4018: '>': signed/unsigned mismatch
+C:\Users\kero6\source\repos\SearchEngine\SearchEngine\SearchEngine.cpp(374,18): warning C4018: '>': signed/unsigned mismatch
+  website.cpp
+C:\Users\kero6\source\repos\SearchEngine\SearchEngine\website.cpp(34,21): warning C4244: 'argument': conversion from 'double' to 'const unsigned int', possible loss of data
+C:\Users\kero6\source\repos\SearchEngine\SearchEngine\website.cpp(35,20): warning C4244: 'argument': conversion from 'double' to 'const unsigned int', possible loss of data
+C:\Users\kero6\source\repos\SearchEngine\SearchEngine\website.cpp(48,22): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+C:\Users\kero6\source\repos\SearchEngine\SearchEngine\website.cpp(103,12): warning C4244: 'return': conversion from 'double' to 'int', possible loss of data
+  Generating Code...
   SearchEngine.vcxproj -> C:\Users\kero6\source\repos\SearchEngine\Debug\SearchEngine.exe

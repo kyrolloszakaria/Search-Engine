@@ -1,4 +1,3 @@
 ﻿  SearchEngine.cpp
-C:\Users\kero6\source\repos\SearchEngine\SearchEngine\SearchEngine.cpp(232,10): warning C4102: 'case1': unreferenced label
-C:\Users\kero6\source\repos\SearchEngine\SearchEngine\SearchEngine.cpp(312,22): warning C4018: '>': signed/unsigned mismatch
+C:\Users\kero6\source\repos\SearchEngine\SearchEngine\SearchEngine.cpp(367,22): warning C4018: '>': signed/unsigned mismatch
   SearchEngine.vcxproj -> C:\Users\kero6\source\repos\SearchEngine\Debug\SearchEngine.exe

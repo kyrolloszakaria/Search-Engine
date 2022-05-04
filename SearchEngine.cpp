@@ -11,6 +11,7 @@ void save_impressions_number();
 void save_clicks();
 void menu_spark();
 void search_spark();
+void LOWER(string &s); // to make a string all lower characters.
 void OR_search(const vector<string> &searchKeys);
 void AND_search(const vector<string>& searchKeys);
 void Quote_search(const vector<string>& searchKeys);
@@ -190,64 +191,69 @@ void print_AL(vector<vector<T>> v)
 }
 void classify_search(const string& searchQuery) //takes the query and classify the search type and take the important key words form the query and put it in a vector.
 {
-    vector<string> searchKeys;
+    vector<vector<string>> searchKeys(3);
     int n = searchQuery.size();
     int searchType = 2; // 0 for AND , 1 for " ... " , 2 for OR.
-    // if searchQuery contains AND :
-    int pos = searchQuery.find("AND");
-    string temp;
-    if (pos != std::string::npos)
-    {
-        searchType = 0;
-        temp = searchQuery.substr(0, pos);
-        temp += searchQuery.substr(pos + 3, searchQuery.size() - pos - 3);
-    }
     // if searchQuery contains quotation marks :
     int lQ = searchQuery.find('"');
-    if (lQ != std::string::npos) // lQ -> left Quotation, rQ -> right Quotation
+    while (lQ != std::string::npos) // lQ -> left Quotation, rQ -> right Quotation
     {
         searchType = 1;
         int rQ = searchQuery.find('"', lQ + 1);
-        temp = searchQuery.substr(lQ + 1, rQ - lQ - 1); // takes startign position and length = rQ - lQ -1.
+        searchKeys[1].push_back(searchQuery.substr(lQ + 1, rQ - lQ - 1)); // takes startign position and length = rQ - lQ -1.
+        lQ = searchQuery.find('"', rQ + 1);
+    }
+    // if searchQuery contains AND :
+    int pos = searchQuery.find("AND");
+    string temp;
+    while (pos != std::string::npos && searchType != 1)
+    {
+        searchType = 0;
+        temp = searchQuery.substr(searchQuery.find_last_of(' ', pos - 2) + 1, pos - searchQuery.find_last_of(' ', pos - 2) - 2); // pos here is a length
+        searchKeys[0].push_back(temp);
+        temp.clear();
+        temp = searchQuery.substr(pos + 4, searchQuery.find_first_of(' ', pos + 4) - pos - 4);
+        searchKeys[0].push_back(temp);
+        pos = searchQuery.find("AND", pos + 2); // to handle more than one AND
     }
     // if searchQuery contains OR or does not contains any :
     if (searchType == 2)
     {
-        temp = searchQuery;
+        stringstream ss(searchQuery);
+        string word;
+        while (getline(ss, word, ' '))
+        {
+            searchKeys[2].push_back(word);
+        }
     }
-    stringstream ss(temp);
-    string word;
-    while (getline(ss, word, ' '))
-    {
-        //if (word != "")
-        //    cout << word << "\n";
-        searchKeys.push_back(word);
-    }
-    switch (searchType)
-    {
-    case 0:
-        // AND_search(searchKeys);
-        break;
 
-    case1:
-        // Quote_search(searchKeys);
-        break;
+    if (!searchKeys[0].empty())
+        AND_search(searchKeys[0]);
+    if (!searchKeys[1].empty())
+        Quote_search(searchKeys[1]);
+    else if (!searchKeys[2].empty())
+        OR_search(searchKeys[2]);
 
-    case 2:
-        OR_search(searchKeys);
-        break;
+}
+void LOWER(string& s) {
+    for (auto& i : s) 
+    {
+        i = tolower(i);
     }
 }
+
 void OR_search(const vector<string>& searchKeys) 
 {
     map<double,website> resultWebsites; // a map <double score, website result>
     for (auto &it : websites) 
     {
         string temp = it.second.getKeyWords();
+        LOWER(temp);
         if (temp != "")
         {
             for (auto word : searchKeys)
             {
+                LOWER(word); // to ignore case sensitivity.
                 if (temp.find(word) != std::string::npos) 
                 {
                     it.second.updateImpressions(); 
@@ -260,12 +266,61 @@ void OR_search(const vector<string>& searchKeys)
     } 
     print_results(resultWebsites,true);
 }
+void AND_search(const vector<string>& searchKeys) {
+    map<double, website> resultWebsites; // a map <double score, website result>
+    for (auto& it : websites)
+    {
+        bool exist = true;
+        string temp = it.second.getKeyWords();
+        LOWER(temp); 
+        if (temp != "")
+        {
+            for (auto word : searchKeys)
+            {
+                LOWER(word); // to ignore case sensitivity.
+                if (temp.find(word) == std::string::npos)
+                {
+                    exist = false;
+                    break;
+                }
+
+            }
+            if(exist) resultWebsites.emplace(it.second.getScore(), it.second);
+        }
+    }
+    print_results(resultWebsites, true);
+}
+void Quote_search(const vector<string>& searchKeys) {
+    map<double, website> resultWebsites; // a map <double score, website result>
+    for (auto& it : websites)
+    {
+        bool exist = true;
+        string temp = it.second.getKeyWords();
+        if (temp != "")
+        {
+            for (auto word : searchKeys)
+            {
+                if (temp.find(word) == std::string::npos)
+                {
+                    exist = false;
+                    break;
+                }
+
+            }
+            if (exist) resultWebsites.emplace(it.second.getScore(), it.second);
+        }
+    }
+    print_results(resultWebsites, true);
+}
+
+
 void PR_spark(vector<vector<int>>& TransposedVector) {
     websites.begin()->second.calculatePR(websites, TransposedVector);
 }
 void search_spark() 
 {
-    cout << "\nWhat do you want to search for?\n";
+    cout << "\nInstructions for valid search query:\n1. Don't use AND or OR inside a quotation marks.\n2. use AND and OR (capitalized).\n";
+    cout << "What do you want to search for?\n";
     string searchQuery;
     cin.ignore(); // to clean the input buffer.
     getline(cin, searchQuery);
@@ -285,9 +340,9 @@ void print_results(map<double, website> &resultWebsites, bool isFirst) // isFirs
     {
         int i = 1;
         string s = "";
-        for (auto it : resultWebsites) {
-            cout << i << ". " << it.second.getName() << endl;
-            s = s + to_string(i) + ". " + it.second.getName() + "\n";
+        for (auto it = resultWebsites.rbegin(); it != resultWebsites.rend(); ++it) {
+            cout << i << ". " << it->second.getName() << endl;
+            s = s + to_string(i) + ". " + it->second.getName() + "\n";
             i++;
         }
         save_screen(s);
